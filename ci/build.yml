@@ -7,7 +7,7 @@ image_resource:
     tag: '8-jdk'
 
 inputs:
-  - name: pal-tracker
+  - name: pal-tracker-1
   - name: version
 
 outputs:
@@ -18,7 +18,7 @@ run:
   args:
   - -exc
   - |
-    cd pal-tracker
+    cd pal-tracker-1
     chmod +x gradlew
     ./gradlew -P version=$(cat ../version/number) build
-    cp build/libs/pal-tracker-*.jar ../build-output
+    cp build/libs/pal-tracker-1-*.jar ../build-output

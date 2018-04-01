@@ -1,17 +1,17 @@
 ---
 resources:
-- name: pal-tracker
+- name: pal-tracker-1
   type: git
   source:
     uri: {{github-repository}}
     branch: master
     private_key: {{github-private-key}}
 
-- name: pal-tracker-artifacts
+- name: pal-tracker-1-artifacts
   type: s3
   source:
     bucket: {{aws-bucket}}
-    regexp: releases/pal-tracker-(.*).jar
+    regexp: releases/pal-tracker-1-(.*).jar
     access_key_id: {{aws-access-key-id}}
     secret_access_key: {{aws-secret-access-key}}
 
@@ -19,7 +19,7 @@ resources:
   type: semver
   source:
     bucket: {{aws-bucket}}
-    key: pal-tracker/version
+    key: pal-tracker-1/version
     access_key_id: {{aws-access-key-id}}
     secret_access_key: {{aws-secret-access-key}}
 
@@ -44,40 +44,40 @@ resources:
 jobs:
 - name: build
   plan:
-  - get: pal-tracker
+  - get: pal-tracker-1
     trigger: true
   - get: version
     params: {bump: patch}
   - task: build and test
-    file: pal-tracker/ci/build.yml
-  - put: pal-tracker-artifacts
+    file: pal-tracker-1/ci/build.yml
+  - put: pal-tracker-1-artifacts
     params:
-      file: build-output/pal-tracker-*.jar
+      file: build-output/pal-tracker-1-*.jar
   - put: version
     params:
       file: version/number
 
 - name: deploy-review
   plan:
-  - get: pal-tracker
-  - get: pal-tracker-artifacts
+  - get: pal-tracker-1
+  - get: pal-tracker-1-artifacts
     trigger: true
     passed: [build]
   - put: review-deployment
     params:
-      manifest: pal-tracker/manifest-review.yml
-      path: pal-tracker-artifacts/pal-tracker-*.jar
+      manifest: pal-tracker-1/manifest-review.yml
+      path: pal-tracker-1-artifacts/pal-tracker-*.jar
       environment_variables:
         WELCOME_MESSAGE: "Hello from the review environment"
 
 - name: deploy-production
   plan:
-  - get: pal-tracker
-  - get: pal-tracker-artifacts
+  - get: pal-tracker-1
+  - get: pal-tracker-1-artifacts
     passed: [deploy-review]
   - put: production-deployment
     params:
-      manifest: pal-tracker/manifest-production.yml
-      path: pal-tracker-artifacts/pal-tracker-*.jar
+      manifest: pal-tracker-1/manifest-production.yml
+      path: pal-tracker-1-artifacts/pal-tracker-1-*.jar
       environment_variables:
         WELCOME_MESSAGE: "Hello from the production environment"
